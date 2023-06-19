@@ -14,3 +14,23 @@ https://github.com/mdeff/fma
 https://github.com/MTG/melon-music-dataset
 649.091 spectrogramme und metadaten
 (koreanisch)
+
+### FMA (free music archive)
+Benchmark for genre classification and Description: https://paperswithcode.com/dataset/fma#:~:text=The%20Free%20Music%20Archive%20%28FMA%29%20is%20a%20large-scale,arranged%20in%20a%20hierarchical%20taxonomy%20of%20161%20genres.
+
+Kaggle: https://www.kaggle.com/datasets/imsparsh/fma-free-music-archive-small-medium
+(sample Classification achieves 46% accuracy)
+
+### Last.fm
+Million Song dataset with other enriched (like Last.fm):
+https://www.kaggle.com/datasets/undefinenull/million-song-dataset-spotify-lastfm
+
+Music Recommandation Notebook with Last.fm:
+https://www.kaggle.com/code/pcbreviglieri/recommending-music-artists-with-boltzmann-machines/notebook 
+
+### Audio similarity Deep Learning:
+Musical Audio Similarity with Self-supervised Convolutional Neural Networks
+https://arxiv.org/abs/2202.02112
+
+Audio-based Near-Duplicate Video Retrieval with Audio Similarity Learning
+https://github.com/mever-team/ausil

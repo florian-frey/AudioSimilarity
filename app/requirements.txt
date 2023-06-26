@@ -1,0 +1,6 @@
+streamlit
+streamlit_extras
+psycopg2
+librosa
+matplotlib
+tqdm

@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  database:
+    container_name: postgres-audiosimilarity
+    image: "postgres:12.3"
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_DB: fma
+
+  app:
+    depends_on:
+      - database
+    container_name: streamlit-app-audiosimilarity
+    build:
+      context: ./
+      dockerfile: ./app/Dockerfile
+    image: streamlit-app-audiosimilarity
+    ports:
+      - "8501:8501"
+    links:
+      - database:db

@@ -1,6 +1,8 @@
 streamlit
 streamlit_extras
+st-pages
 psycopg2
 librosa
 matplotlib
 tqdm
+sqlalchemy

@@ -3,11 +3,15 @@ import psycopg2
 import zipfile
 from time import sleep
 from tqdm import tqdm
+import toml
+
+
+secrets = toml.load("/code/.streamlit/secrets.toml")["connections"]["postgres"]
 
 for retry in range(1,6):
     print("Connecting to database...")
     try:
-        conn = psycopg2.connect("host=database port=5432 dbname=fma user=postgres password=supersecretpassword")
+        conn = psycopg2.connect(f"host={secrets['host']} port={secrets['port']} dbname={secrets['database']}  user={secrets['username']}  password={secrets['password']}")
         cursor = conn.cursor()
         break
     except:

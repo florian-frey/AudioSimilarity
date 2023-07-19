@@ -1,5 +1,13 @@
 # AudioSimilarity
 
+## Notebooks & Links
+
+- Autoencoder + CVAE Training und Visualisierung: https://colab.research.google.com/drive/1IAgiIvzWHrfhQIiMLNpzWo-Ve6cmGoL0?usp=sharing
+
+- Spectrogramm Preprocessing ASS: https://colab.research.google.com/drive/1PFnOeIdPzhg9vUTvK_k_A7_otIBDVGNZ?usp=sharing
+
+- CNN Genre Classifier: https://colab.research.google.com/drive/1BwaHqNcPWjuwzE0ey5j44oEu1CVrcMFv?usp=sharing
+
 ## Datenquellen
 
 https://www.kaggle.com/datasets/tpapp157/billboard-hot-100-19602020-spectrograms

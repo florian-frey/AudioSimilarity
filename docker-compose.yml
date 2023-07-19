@@ -2,14 +2,14 @@ version: "3.8"
 
 services:
   database:
-    container_name: postgres-audiosimilarity
-    image: "postgres:12.3"
+    container_name: redis-audiosimilarity
+    image: "redis/redis-stack-server:latest"
     ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: supersecretpassword
-      POSTGRES_DB: fma
+      - "6379:6379"
+    # environment:
+    # POSTGRES_USER: redis
+    # POSTGRES_PASSWORD: supersecretpassword
+    # POSTGRES_DB: fma
 
   app:
     depends_on:

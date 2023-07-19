@@ -8,6 +8,8 @@
 
 - CNN Genre Classifier: https://colab.research.google.com/drive/1BwaHqNcPWjuwzE0ey5j44oEu1CVrcMFv?usp=sharing
 
+- dataset link: https://drive.google.com/drive/folders/1vcdYV2ROD2mog9uNa9soXa1xsQ_dT7dc?usp=sharing
+
 ## Datenquellen
 
 https://www.kaggle.com/datasets/tpapp157/billboard-hot-100-19602020-spectrograms

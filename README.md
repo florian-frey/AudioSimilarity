@@ -8,7 +8,12 @@
 
 - CNN Genre Classifier: https://colab.research.google.com/drive/1BwaHqNcPWjuwzE0ey5j44oEu1CVrcMFv?usp=sharing
 
+- Load Model an Test it: https://colab.research.google.com/drive/1ZhmiyUJKo7o4vtH8D0gQXfcbNm3OfZ2c?usp=sharing
+
 - dataset link: https://drive.google.com/drive/folders/1vcdYV2ROD2mog9uNa9soXa1xsQ_dT7dc?usp=sharing
+
+- Model link: https://drive.google.com/drive/folders/1EmKaHxKsIM6hl1tTY2dVYQvHCcY7koNc?usp=sharing
+
 
 ## Datenquellen
 

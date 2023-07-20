@@ -56,6 +56,8 @@ docker-compose down -v
 
 - Model link: https://drive.google.com/drive/folders/1EmKaHxKsIM6hl1tTY2dVYQvHCcY7koNc?usp=sharing
 
+- Model Evaluation: https://colab.research.google.com/drive/1frIrlznYXRoXgIe9ZZZ5O0jClbYJKc6O?usp=sharing
+
 ## Datenquellen
 
 https://www.kaggle.com/datasets/tpapp157/billboard-hot-100-19602020-spectrograms

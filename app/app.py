@@ -1,15 +1,25 @@
 import streamlit as st
-# import spotify_api
 # from st_pages import Page, show_pages, add_page_title, hide_pages
 from streamlit_extras.switch_page_button import switch_page
-from feature_extraction import *
+import pandas as pd
 from redis import Redis
 from redis.commands.search.query import Query
+import utils
 
-# hide side navbar
+
+
 st.set_page_config(
-    initial_sidebar_state="collapsed"
+    page_title = "Audio Similarity Service",
+    # page_icon = ,
+    # layout = "wide",
+    initial_sidebar_state = "collapsed",
+    # menu_items = {
+    #     "Get Help": None,
+    #     "Report a Bug": None,
+    #     "About": None
+    # }
 )
+# workaround to hide side navbar
 st.markdown(
     """
     <style>
@@ -29,109 +39,70 @@ st.markdown(
 #     ]
 # )
 
+# additional styling
+# st.markdown("""<style>.css-zt5igj svg{display:none}</style>""", unsafe_allow_html=True)
+
+
+# set session_state values
+if 'song_upload' not in st.session_state:
+    st.session_state.song_upload = None
+if 'selected_song' not in st.session_state:
+        st.session_state.selected_song = None
+if 'query_db' not in st.session_state:
+    st.session_state.query_db = False
+    st.session_state.df = pd.DataFrame()
+st.session_state.page = 0
+
 
 st.title("Audio Similarity")
 
 
-# upload own audio file
-st.header("File Upload")
+tab1, tab2 = st.tabs(["Upload File", "Query Database"])
 
-audio = st.file_uploader("Upload song", type=["mp3", "wav"], accept_multiple_files=False,
-                         key=None, help="Tooltip", on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
+with tab1:
 
-if audio is not None:
-    st.write(audio)
-    st.audio(audio, format="audio/wav", start_time=0, sample_rate=None)
+    # upload own audio file
+    st.header("File Upload")
 
-    with st.spinner(text="Extracting features..."):
-        features = extract_features(audio)
-        st.write(features)
+    upload = st.file_uploader("Upload song", type=["mp3", "wav"], accept_multiple_files=False,
+                            key=None, help="Tooltip", on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible")
+    if upload:
+        st.session_state.song_upload = upload
 
-
-
-# redis database search
-
-redis_conn = Redis(host='localhost', port=6379, password=None)
-
-st.header("Redis Database Search")
-
-def base_query(return_fields: list=[], number_of_results: int=20):
-    base_query = f'*'
-    query = Query(base_query)\
-        .paging(0, number_of_results)\
-        .dialect(2)
-    
-    results = redis_conn.ft("audiosimilarity").search(query)
-
-    if results.docs:
-        return pd.DataFrame(list(map(lambda x: {'id': x.id, 'track_title' : x.track_title, 'album_title': x.album_title, 'artist_name': x.artist_name}, results.docs))).sort_values(by='id')
-    else:
-        return pd.DataFrame()
-
-def get_song_info(id):
-    try:
-        return f"{st.session_state.df.loc[id, 'track_title']} [{st.session_state.df.loc[id, 'artist_name']}]"
-    except:
-        return id
-    
-    
-if 'query_db' not in st.session_state:
-    st.session_state.query_db = None
-    st.session_state.df = None
-
-if not st.session_state.query_db:
-    if st.button("Query Database"):
-        with st.spinner(text="Querying database..."):
-            st.session_state.df = base_query(number_of_results=10000)
-            st.session_state.df["track_id"] = st.session_state.df["id"].str[16:]
-            st.session_state.df.index = st.session_state.df["track_id"]
-            st.session_state.query_db = True
-            st.experimental_rerun()
-            
-else:
-    # st.dataframe(st.session_state.df)
-    st.write(str(len(st.session_state.df)), "songs found.")
-
-    if 'track_id' not in st.session_state:
-        st.session_state.track_id = None
-
-    with st.spinner("Loading Song..."):
-        st.session_state.track_id = st.selectbox("Search for song in database", [""]+list(st.session_state.df["track_id"]), format_func=get_song_info)
-
-
-    if st.session_state.track_id:
-        if st.button("Show results."):
+     # button to show results
+    if st.session_state.song_upload:
+        if st.button("Show results.", key="button_upload"):
             with st.spinner("Loading..."):
+                st.session_state.selected_song = None
                 switch_page("results")
 
 
+with tab2:
+# redis database search
 
+    redis_conn = Redis(host='localhost', port=6379, password=None)
 
+    st.header("Redis Database Search")
 
-# search for song via spotify api
+    def get_song_info(id):
+        try:
+            return f"{st.session_state.df.loc[id, 'track_title']} [{st.session_state.df.loc[id, 'artist_name']}]"
+        except:
+            return id
 
-# if 'song1_id' not in st.session_state:
-#     st.session_state.song1_id = None
+    if not st.session_state.query_db:
+        # if st.button("Query Database"):
+            with st.spinner(text="Querying database..."):
+                st.session_state.df = utils.query_database()
+                st.session_state.query_db = True
+                st.experimental_rerun()
+    else:
+        st.write(str(len(st.session_state.df)), "songs found.")
+        st.session_state.selected_song = st.selectbox("Search for song in database:", [""]+list(st.session_state.df["track_id"]), format_func=get_song_info)
 
-# def search():
-#     song_id = spotify_api.get_song_id(title, artist)
-#     if song_id:
-#         st.session_state.song1_id = song_id
-#     else:
-#         st.warning(' No Track found.', icon="⚠️")
-
-# st.header("Spotify API")
-# title = st.text_input("Song 1", label_visibility="collapsed", placeholder="title", key="search1title")
-# artist = st.text_input("Song 1", label_visibility="collapsed", placeholder="artist", key="search1artist")
-
-# st.button("Search", on_click=search)
-
-# st.write("ID:", st.session_state.song1_id)
-
-# st.components.v1.iframe(f"https://open.spotify.com/embed/track/{st.session_state.song1_id}?utm_source=generator&theme=0", width=None, height=352, scrolling=False)
-
-# if st.button("Kowalski, Analysis!"):
-#     switch_page("results")
-
-
-# st.audio("https://storage.googleapis.com/kagglesdsdata/datasets/1130776/1897587/fma_medium/fma_medium/004/004027.mp3")
+    # button to show results
+    if st.session_state.selected_song:
+        if st.button("Show results.", key="button_select"):
+            with st.spinner("Loading..."):
+                st.session_state.song_upload = None
+                switch_page("results")

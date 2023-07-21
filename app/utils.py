@@ -1,11 +1,10 @@
-import os
+# import os
+import requests
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
+# from tqdm import tqdm
 from redis import Redis
 from redis.commands.search.query import Query
-from redis.commands.search.indexDefinition import IndexDefinition, IndexType
-from redis.commands.search.field import VectorField, TagField, TextField, NumericField
 
 
 ###                     ###
@@ -28,12 +27,13 @@ def query_database(page_start=0, page_end=8000):
         return df
 
 
-def get_vector_similarity(vec:np.array, n_songs:int=5):
+def get_vector_similarity(vec:np.array, n_songs:int=50):
 
     base_query = f'* =>[ KNN {n_songs} @feature_vector $vec_param AS vector_score]'
 
     query = Query(base_query)\
         .sort_by("vector_score", asc=False)\
+        .paging(0, n_songs)\
         .dialect(2)
 
     params_dict = {"vec_param": vec.astype(dtype=np.float32).tobytes()}
@@ -49,47 +49,18 @@ def get_vector_similarity(vec:np.array, n_songs:int=5):
 ###     Extraction      ###
 ###                     ###
 
-import librosa
-import matplotlib.pyplot as plt
+# import librosa
+# import matplotlib.pyplot as plt
 
-
-def create_melspectrogram(y: np.ndarray, sr: int, output_file: str, array_path: str = None):
-    """
-        Args:
-            y : np.ndarray [shape=(..., n)] or None
-                audio time-series. Multi-channel is supported.
-            sr : number > 0 [scalar]
-                sampling rate of ``y``
-            output_file: str or pathlib.Path
-                file to store the diagram
-    """
-    
-    if not os.path.exists(os.path.dirname(output_file)):
-      os.makedirs(os.path.dirname(output_file))
-    # melspectrogram_array = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128,fmax=8000)
-    melspectrogram_array = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=2048, hop_length=512)
-
-    mel = librosa.power_to_db(melspectrogram_array)
-    # Length and Width of Spectogram
-    fig_size = plt.rcParams["figure.figsize"]
-    fig_size[0] = float(mel.shape[1] / 100)
-    fig_size[1] = float(mel.shape[0] / 100)
-    plt.rcParams["figure.figsize"] = fig_size
-    plt.axis('off')
-    plt.axes([0., 0., 1., 1.0], frameon=False, xticks=[], yticks=[])
-    librosa.display.specshow(mel)   # ,cmap='gray_r'
-    plt.savefig(output_file, dpi=100)
-    plt.close()
-    if array_path is not None:
-      np.save(array_path, melspectrogram_array)
-    return melspectrogram_array
+def extract_features(audio):
+    # ...
+    return feature_vector
 
 
 ###                     ###
 ###     Spotify API     ###
 ###                     ###
 
-import requests
 
 
 def get_spotify_id(title, artist):

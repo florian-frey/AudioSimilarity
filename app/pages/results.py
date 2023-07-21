@@ -1,7 +1,8 @@
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-import utils
 import numpy as np
+import json
+import utils
 
 # hide side navbar
 st.set_page_config(
@@ -19,7 +20,7 @@ st.markdown("""
         [data-testid="stMetricValue"] {
             width: 100%;
             text-align: center;
-            font-size: 75px;
+            font-size: 50px;
             padding: 10% 0;
         }
             
@@ -34,9 +35,8 @@ if 'song_upload' not in st.session_state:
     st.session_state.song_upload = None
 if 'selected_song' not in st.session_state:
         st.session_state.selected_song = None
-if 'page' not in st.session_state:
-    st.session_state.page = 0
 
+results = None
 
 # helper functions
 @st.cache_data
@@ -47,7 +47,7 @@ def print_song(n, song):
         col1, col2, col3 = st.columns([0.3,0.3,0.4])
 
         with col1:
-            st.metric("Similarity", "92%", delta=None, delta_color="normal", help="Cosine Similarity.", label_visibility="visible")
+            st.metric("Similarity", f"{float(song.vector_score):.2%}", delta=None, delta_color="normal", help="Cosine Similarity.", label_visibility="visible")
 
         with col2:
             st.subheader(":violet[Artist]")
@@ -88,25 +88,23 @@ def print_song(n, song):
 st.title("Audio Similarity Results")
 
 
-
-st.header("Your Song")
-
-
 if st.session_state.song_upload:
     # 🎼🎵🎶🎧🎹💾🔍📂▶️
+    st.header("Your Song")
     st.subheader(f'🎶 {st.session_state.song_upload.name}')
     st.audio(st.session_state.song_upload, format="audio/wav", start_time=0, sample_rate=None)
+
+    # with st.spinner("Extracting features..."):
+        #  utils.extract_features()
 
     with st.spinner("Finding similar songs..."):
         vec = np.random.rand(100)
         results = utils.get_vector_similarity(vec)
 
+
 elif st.session_state.selected_song:
+    st.header("Your Song")
     song = st.session_state.df.loc[st.session_state.selected_song, :]
-
-    # st.write('You selected song', st.session_state.selected_song)
-    # st.subheader(f":violet[{song.track_title}]")
-
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -123,31 +121,27 @@ elif st.session_state.selected_song:
         st.write(f"**{song.album_title}**")
 
     spotify_id = utils.get_spotify_id(song.track_title, song.artist_name)
-    if spotify_id:
+    if isinstance(spotify_id, str):
         st.components.v1.iframe(f"https://open.spotify.com/embed/track/{spotify_id}?utm_source=generator&theme=0", width=None, height=256, scrolling=False)
+    elif isinstance(spotify_id, Exception):
+        st.error(f"""
+                    API Exception: {spotify_id}  
+                    You are probably missing the client secret. Refer to the README.md
+                    """, icon="⚠️")
     else:
-        st.warning("Song not found on Spotify.", icon="⚠️")    
+        st.warning("Song not found on Spotify.", icon="⚠️")  
 
-    # st.dataframe(song)
 
-    # string = song["feature_vector"]
-    # bytestring = bytes(string)
-
-    # st.write(string)
-    # st.write(bytestring)
+    with st.spinner("Extracting features..."):
+        feature_vector_text = song["feature_vector_text"]
+        feature_vector = np.array(json.loads(feature_vector_text))
     
-
-    # with st.spinner("Finding similar songs..."):
-        # utils.get_vector_similarity(song["feature_vector"])
-
     with st.spinner("Finding similar songs..."):
-        vec = np.random.rand(100)
-        results = utils.get_vector_similarity(vec)
+        results = utils.get_vector_similarity(feature_vector, n_songs=51)
+
 
 else:
-    st.warning("No song selected. Please go back and select a song to analyze.")
-    if st.button("Home", key="button-nosong"):
-        switch_page("app")
+    st.warning("No song selected. Please go back and select a song to analyze.", icon="⚠️")
 
 
 if st.button("Back to Song Selection", use_container_width=True):
@@ -157,28 +151,21 @@ if st.button("Back to Song Selection", use_container_width=True):
 
 
 # results
-st.header("Recommended Songs")
+if results is not None:
+    # st.write(f"{len(results)} results.")
+    # st.dataframe(results)
 
+    st.header("Recommended Songs")
 
-n_results = st.slider("Number of results to display:", min_value=1, max_value=50, value=5, on_change=None, key="selector")
+    n_results = st.slider("Number of results to display:", min_value=1, max_value=50, value=5, on_change=None, key="selector")
 
-# results_container = st.container()
+    progress_bar = st.progress(0, "Loading")
+    for idx, song in results.iloc[:n_results].iterrows():
+        progress_bar.progress((idx/n_results), "Loading")
+        print_song(idx+1, song)
+    progress_bar.empty()
 
-results = utils.get_vector_similarity(vec, n_songs=n_results)
-for n, (idx, song) in enumerate(results.iterrows()):
-    print_song(n+1, song)
-    # st.divider()
-        
-# def load_songs():
-#     st.session_state.page +=1
-#     more_results = utils.get_vector_similarity(vec, page=st.session_state.page)
-#     for n, (idx, song) in enumerate(more_results.iterrows()):
-#         print_song(n+1+5*st.session_state.page, song)
-#         # st.divider()
-
-# st.button("Load more", on_click=load_songs, use_container_width=True)
-
-if st.button("Back to Song Selection", use_container_width=True, key="button-end"):
-    st.session_state.selected_song = None
-    st.session_state.song_upload = None
-    switch_page("app")
+    if st.button("Back to Song Selection", use_container_width=True, key="button-end"):
+        st.session_state.selected_song = None
+        st.session_state.song_upload = None
+        switch_page("app")

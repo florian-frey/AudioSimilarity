@@ -1,3 +1,8 @@
+#
+# Based on `features.py` of the FMA Dataset found on GitHub (https://github.com/mdeff/fma)
+# in order to extract the exact same features as in the dataset.
+#
+
 import librosa
 import numpy as np
 import pandas as pd

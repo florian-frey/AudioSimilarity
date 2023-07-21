@@ -6,7 +6,7 @@ COPY ./app/requirements.txt /code/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-COPY ./fma-metadata/tracks.zip /code
+COPY ./fma-metadata/tracks_small.zip /code
 
 COPY ./app /code
 

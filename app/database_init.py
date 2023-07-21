@@ -1,3 +1,5 @@
+import zipfile
+import json
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -11,7 +13,9 @@ distance_metric:str="COSINE"
 DIM = 100
 
 # load data
-df = pd.read_csv("../fma-metadata/tracks_small.csv", index_col=0, header=[0,1])
+with zipfile.ZipFile("tracks_small.zip", 'r') as zip_ref:
+        zip_ref.extractall("./")
+df = pd.read_csv("tracks_small.csv", index_col=0, header=[0,1])
 
 # redis connection
 redis_conn = Redis(host='localhost', port=6379, password=None)
@@ -31,6 +35,7 @@ genre_top = TextField(name="genre_top")
 language_code = TextField(name="language_code")
 album_date_released = TextField(name="album_date_released")
 
+feature_vector_text = TextField(name="feature_vector_text")
 feature_vector = VectorField("feature_vector",
             "HNSW", {
                 "TYPE": "FLOAT32",
@@ -41,7 +46,7 @@ feature_vector = VectorField("feature_vector",
 
 # create index
 redis_conn.ft(index_name).create_index(
-    fields = [track_title, album_title, artist_name, track_publisher, album_tracks, bit_rate, duration, genre_top, language_code, album_date_released, feature_vector],
+    fields = [track_title, album_title, artist_name, track_publisher, album_tracks, bit_rate, duration, genre_top, language_code, album_date_released, feature_vector_text, feature_vector],
     definition = IndexDefinition(prefix=[index_name], index_type=IndexType.HASH)
 )
 
@@ -52,6 +57,8 @@ print("Populating database... May take a few minutes.")
 for track_id, row in tqdm(df.iloc[:,:].iterrows()):
 
     row = row.replace({pd.NaT: "null"})
+
+    feature_vector = np.random.rand(DIM)
 
     redis_conn.hset(
         f"{index_name}:{track_id}",
@@ -66,7 +73,8 @@ for track_id, row in tqdm(df.iloc[:,:].iterrows()):
             "genre_top": row["track", "genre_top"],
             "language_code": row["track", "language_code"],
             "album_date_released": row["album", "date_released"],
-            "feature_vector": np.random.rand(DIM).astype(dtype=np.float32).tobytes()
+            "feature_vector_text": json.dumps(list(feature_vector)),
+            "feature_vector": feature_vector.astype(dtype=np.float32).tobytes()
         }
     )
 

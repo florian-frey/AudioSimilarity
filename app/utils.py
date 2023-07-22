@@ -18,7 +18,10 @@ def query_database(page_start=0, page_end=8000):
             .paging(page_start, page_end)\
             .dialect(2)
         
-        results = Redis(host="localhost", port=6379, password=None).ft("audiosimilarity").search(query)
+        try:
+            results = Redis(host="database", port=6379, password=None).ft("audiosimilarity").search(query)
+        except:
+            results = Redis(host="localhost", port=6379, password=None).ft("audiosimilarity").search(query)
 
         df = pd.DataFrame(list(map(lambda x: x.__dict__, results.docs)))
         df["track_id"] = df["id"].str[16:]
@@ -38,7 +41,10 @@ def get_vector_similarity(vec:np.array, n_songs:int=50):
 
     params_dict = {"vec_param": vec.astype(dtype=np.float32).tobytes()}
 
-    results = Redis(host="localhost", port=6379, password=None).ft("audiosimilarity").search(query, params_dict)
+    try:
+        results = Redis(host="database", port=6379, password=None).ft("audiosimilarity").search(query, params_dict)
+    except:
+        results = Redis(host="localhost", port=6379, password=None).ft("audiosimilarity").search(query, params_dict)
 
     return pd.DataFrame(list(map(lambda x: x.__dict__, results.docs)))
 

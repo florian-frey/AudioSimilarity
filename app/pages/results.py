@@ -157,7 +157,6 @@ elif st.session_state.selected_song:
         feature_vector = np.array(json.loads(feature_vector_text))
     
     if st.session_state.results is None:
-        print("Test")
         with st.spinner("Finding similar songs..."):
             st.session_state.results  = utils.get_vector_similarity(feature_vector, n_songs=51)
 

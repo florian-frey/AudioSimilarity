@@ -44,34 +44,13 @@ docker-compose down -v
 
 ## Notebooks & Links
 
-- Autoencoder + CVAE Training und Visualisierung: https://colab.research.google.com/drive/1IAgiIvzWHrfhQIiMLNpzWo-Ve6cmGoL0?usp=sharing
+- Datasets:
+  - 3 seconds melspectrograms, spectral contrast, chroma stft dataset link: https://drive.google.com/file/d/12H5OzHtYo9DmRXdRV7DNqZhkG7kZk2Hf/view?usp=sharing
+  - 3 seconds all spectrograms stacked together: https://drive.google.com/file/d/18HGpYe5eF_4bNlqZX-gOVY5jqfK0uUGT/view?usp=sharing
+  - 30 seconds melspectrograms dataset link: https://drive.google.com/drive/folders/1vcdYV2ROD2mog9uNa9soXa1xsQ_dT7dc?usp=sharing
+  - Predicted vectors test data: https://drive.google.com/file/d/1--CheDCvqEwBvr4f_3aJW8dpVpM9WB_U/view?usp=sharing
 
-- Spectrogramm Preprocessing ASS: https://colab.research.google.com/drive/1PFnOeIdPzhg9vUTvK_k_A7_otIBDVGNZ?usp=sharing
-
-- CNN Genre Classifier: https://colab.research.google.com/drive/1BwaHqNcPWjuwzE0ey5j44oEu1CVrcMFv?usp=sharing
-
-- Load Model an Test it: https://colab.research.google.com/drive/1ZhmiyUJKo7o4vtH8D0gQXfcbNm3OfZ2c?usp=sharing
-
-- dataset link: https://drive.google.com/drive/folders/1vcdYV2ROD2mog9uNa9soXa1xsQ_dT7dc?usp=sharing
-
-- Model link: https://drive.google.com/drive/folders/1EmKaHxKsIM6hl1tTY2dVYQvHCcY7koNc?usp=sharing
-
-- Model Evaluation: https://colab.research.google.com/drive/1frIrlznYXRoXgIe9ZZZ5O0jClbYJKc6O?usp=sharing
-
-## Datenquellen
-
-https://www.kaggle.com/datasets/tpapp157/billboard-hot-100-19602020-spectrograms
-5737 Spectrogramme
-
-https://zenodo.org/record/5794629
-3000 artificial audio tracks
-
-https://github.com/mdeff/fma
-106.574 audio tracks
-
-https://github.com/MTG/melon-music-dataset
-649.091 spectrogramme und metadaten
-(koreanisch)
+- Link to Models: https://drive.google.com/drive/folders/1EmKaHxKsIM6hl1tTY2dVYQvHCcY7koNc?usp=sharing
 
 ### FMA (free music archive)
 

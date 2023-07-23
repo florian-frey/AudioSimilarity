@@ -89,7 +89,7 @@ def extract_features(audio, encoder):
     plt.rcParams["figure.figsize"] = fig_size
     plt.axis('off')
     plt.axes([0., 0., 1., 1.0], frameon=False, xticks=[], yticks=[])
-    # librosa.display.specshow(mel)   # ,cmap='gray_r'
+    librosa.display.specshow(mel)   # ,cmap='gray_r'
     plt.savefig(tmp_file, dpi=100)
     plt.close()
 
@@ -105,7 +105,7 @@ def extract_features(audio, encoder):
     # remove temporary file
     os.remove(tmp_file)
     
-    return np.array(feature_vector)
+    return np.array(feature_vector).flatten()
 
 
 

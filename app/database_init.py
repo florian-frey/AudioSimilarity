@@ -11,13 +11,17 @@ from redis.commands.search.field import VectorField, TextField, NumericField
 
 index_name = "audiosimilarity"
 distance_metric:str="COSINE"
-DIM = 100
+DIM = 1000
 
 # load data
 print("Extracting and reading data...")
 with zipfile.ZipFile("tracks_small.zip", 'r') as zip_ref:
         zip_ref.extractall("./")
-df = pd.read_csv("tracks_small.csv", index_col=0, header=[0,1])
+with zipfile.ZipFile("vectors_test_data.zip", 'r') as zip_ref:
+    zip_ref.extractall("./")
+metadata = pd.read_csv("tracks_small.csv", index_col=0, header=[0,1])
+vectors = pd.read_csv("vectors_test_data.csv", index_col=0, header=[0,1], sep=",")
+df = pd.merge(metadata, vectors, left_index=True, right_index=True)
 
 # redis connection
 redis_conn = Redis(host='database', port=6379, password=None)
@@ -68,7 +72,8 @@ for track_id, row in tqdm(df.iloc[:,:].iterrows()):
 
     row = row.replace({pd.NaT: "null"})
 
-    feature_vector = np.random.rand(DIM)
+    feature_vector_text = row["feature", "vector"]
+    feature_vector = np.array(json.loads(feature_vector_text))
 
     redis_conn.hset(
         f"{index_name}:{track_id}",
@@ -83,7 +88,7 @@ for track_id, row in tqdm(df.iloc[:,:].iterrows()):
             "genre_top": row["track", "genre_top"],
             "language_code": row["track", "language_code"],
             "album_date_released": row["album", "date_released"],
-            "feature_vector_text": json.dumps(list(feature_vector)),
+            "feature_vector_text": feature_vector_text,
             "feature_vector": feature_vector.astype(dtype=np.float32).tobytes()
         }
     )

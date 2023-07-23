@@ -6,10 +6,6 @@ services:
     image: "redis/redis-stack-server:latest"
     ports:
       - "6379:6379"
-    # environment:
-    # POSTGRES_USER: redis
-    # POSTGRES_PASSWORD: supersecretpassword
-    # POSTGRES_DB: fma
 
   app:
     depends_on:

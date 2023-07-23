@@ -51,6 +51,7 @@ if st.session_state.page_switch:
 def do_switch_page():
     st.session_state.selected_song = None
     st.session_state.song_upload = None
+    st.session_state.results = None
     st.session_state.page_switch = True
 
 @st.cache_data
@@ -116,10 +117,9 @@ if st.session_state.song_upload:
     with st.spinner("Extracting features..."):
         feature_vector = utils.extract_features(st.session_state.song_upload, encoder)
 
-    # with st.spinner("Finding similar songs..."):
-        # st.session_state.results = utils.get_vector_similarity(feature_vector)
+    with st.spinner("Finding similar songs..."):
+        st.session_state.results = utils.get_vector_similarity(feature_vector)
 
-    st.write(feature_vector.shape)
 
 # show database selected song
 elif st.session_state.selected_song:
@@ -128,7 +128,6 @@ elif st.session_state.selected_song:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        # st.markdown("# :headphones:")
         st.subheader(":violet[Title]")
         st.write(f"**{song.track_title}**")
 
@@ -165,18 +164,17 @@ elif st.session_state.selected_song:
 # show warning when no song selected (when manually navigating to /results)
 else:
     st.warning("No song selected. Please go back and select a song to analyze.", icon="⚠️")
+    st.button("Back to Song Selection", use_container_width=True, on_click=do_switch_page)
 
 
 # showing results
 if st.session_state.results is not None:
-    # st.write(f"{len(results)} results.")
-    # st.dataframe(results)
 
     st.header("Recommended Songs")
 
     n_results = st.slider("Number of results to display:", min_value=1, max_value=50, value=5, on_change=None, key="selector")
 
-    progress_bar = st.progress(0, "Loading")
+    progress_bar = st.progress(0, "Loading...")
     for idx, song in st.session_state.results.iloc[:n_results].iterrows():
         progress_bar.progress((idx/n_results), "Loading")
         print_song(idx+1, song)

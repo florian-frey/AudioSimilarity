@@ -1,8 +1,10 @@
-# import os
+import os
+import cv2
 import requests
-import pandas as pd
 import numpy as np
-# from tqdm import tqdm
+import pandas as pd
+import matplotlib.pyplot as plt
+import librosa
 from redis import Redis
 from redis.commands.search.query import Query
 
@@ -55,12 +57,56 @@ def get_vector_similarity(vec:np.array, n_songs:int=50):
 ###     Extraction      ###
 ###                     ###
 
-# import librosa
-# import matplotlib.pyplot as plt
 
-def extract_features(audio):
-    # ...
-    return feature_vector
+def extract_features(audio, encoder):
+
+    y, sr = librosa.load(audio)
+
+    # create 30 seconds snippet
+    if len(y)//sr < 30:
+        # if file shorter than 30 seconds, padding with zeros
+        new_array_30_secs = np.zeros(sr*30)
+        new_array_30_secs[:len(y)] = y
+    else:
+        # extract middle 30 seconds of file
+        middle = len(y)//2
+        start = middle - int(sr*15)
+        end = middle + int(sr*15)
+        new_array_30_secs = y[start:end]
+
+    # create temporary file for spectrogram
+    tmp_file = f"./tmp/{audio.name}.jpg"
+    if not os.path.exists(os.path.dirname(tmp_file)):
+        os.makedirs(os.path.dirname(tmp_file))
+
+    # create mel-spectrogram
+    melspectrogram_array = librosa.feature.melspectrogram(y=new_array_30_secs, sr=sr, n_fft=2048, hop_length=512)
+    mel = librosa.power_to_db(melspectrogram_array)
+    # Length and Width of Spectogram
+    fig_size = plt.rcParams["figure.figsize"]
+    fig_size[0] = float(mel.shape[1] / 100)
+    fig_size[1] = float(mel.shape[0] / 100)
+    plt.rcParams["figure.figsize"] = fig_size
+    plt.axis('off')
+    plt.axes([0., 0., 1., 1.0], frameon=False, xticks=[], yticks=[])
+    # librosa.display.specshow(mel)   # ,cmap='gray_r'
+    plt.savefig(tmp_file, dpi=100)
+    plt.close()
+
+
+    # read mel-spectrogram
+    melspectrogram_resized = cv2.imread(tmp_file)[:, :1280, :]
+
+    # encode spectrogram to receive feature vector
+    feature_vector = []
+    for counter in range(10):
+      feature_vector.extend(encoder.predict(melspectrogram_resized[:, counter*128:(counter+1)*128, :].reshape(-1, 128, 128, 3), verbose=0))
+
+    # remove temporary file
+    os.remove(tmp_file)
+    
+    return np.array(feature_vector)
+
 
 
 ###                     ###

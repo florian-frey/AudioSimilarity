@@ -35,6 +35,9 @@ if 'selected_song' not in st.session_state:
 if 'query_db' not in st.session_state:
     st.session_state.query_db = False
     st.session_state.df = pd.DataFrame()
+if 'page_switch' not in st.session_state:
+    st.session_state.page_switch = None
+st.session_state.page_switch = None
 
 
 st.title("Audio Similarity")

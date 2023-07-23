@@ -1,8 +1,10 @@
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-import numpy as np
 import json
 import utils
+import numpy as np
+from tensorflow.keras.saving import load_model
+
 
 # hide side navbar
 st.set_page_config(
@@ -34,11 +36,23 @@ st.markdown("""
 if 'song_upload' not in st.session_state:
     st.session_state.song_upload = None
 if 'selected_song' not in st.session_state:
-        st.session_state.selected_song = None
+    st.session_state.selected_song = None
+if 'results' not in st.session_state:
+    st.session_state.results = None
+if 'page_switch' not in st.session_state:
+    st.session_state.page_switch = None
 
-results = None
+if st.session_state.page_switch:
+    # perform here so page is not completely reloaded when switching pages
+    switch_page("app")
+
 
 # helper functions
+def do_switch_page():
+    st.session_state.selected_song = None
+    st.session_state.song_upload = None
+    st.session_state.page_switch = True
+
 @st.cache_data
 def print_song(n, song):
     
@@ -72,7 +86,7 @@ def print_song(n, song):
 
         spotify_id = utils.get_spotify_id(song.track_title, song.artist_name)
         if isinstance(spotify_id, str):
-                st.components.v1.iframe(f"https://open.spotify.com/embed/track/{spotify_id}?utm_source=generator&theme=0", width=None, height=256, scrolling=False)
+                st.components.v1.iframe(f"https://open.spotify.com/embed/track/{spotify_id}?utm_source=generator&theme=0", width=None, height=175, scrolling=False)
         elif isinstance(spotify_id, Exception):
             st.error(f"""
                        API Exception: {spotify_id}  
@@ -87,21 +101,27 @@ def print_song(n, song):
 # main content
 st.title("Audio Similarity Results")
 
-
+# show uploaded song
 if st.session_state.song_upload:
     # 🎼🎵🎶🎧🎹💾🔍📂▶️
     st.header("Your Song")
-    st.subheader(f'🎶 {st.session_state.song_upload.name}')
+    st.subheader(f':violet[🎶 {st.session_state.song_upload.name}]')
     st.audio(st.session_state.song_upload, format="audio/wav", start_time=0, sample_rate=None)
 
-    # with st.spinner("Extracting features..."):
-        #  utils.extract_features()
+    st.button("Back to Song Selection", use_container_width=True, on_click=do_switch_page)
 
-    with st.spinner("Finding similar songs..."):
-        vec = np.random.rand(100)
-        results = utils.get_vector_similarity(vec)
+    with st.spinner("Loading model..."):
+        encoder = load_model("model/AEv3encoder3seconds")
 
+    with st.spinner("Extracting features..."):
+        feature_vector = utils.extract_features(st.session_state.song_upload, encoder)
 
+    # with st.spinner("Finding similar songs..."):
+        # st.session_state.results = utils.get_vector_similarity(feature_vector)
+
+    st.write(feature_vector.shape)
+
+# show database selected song
 elif st.session_state.selected_song:
     st.header("Your Song")
     song = st.session_state.df.loc[st.session_state.selected_song, :]
@@ -131,27 +151,24 @@ elif st.session_state.selected_song:
     else:
         st.warning("Song not found on Spotify.", icon="⚠️")  
 
+    st.button("Back to Song Selection", use_container_width=True, on_click=do_switch_page)
 
     with st.spinner("Extracting features..."):
         feature_vector_text = song["feature_vector_text"]
         feature_vector = np.array(json.loads(feature_vector_text))
     
-    with st.spinner("Finding similar songs..."):
-        results = utils.get_vector_similarity(feature_vector, n_songs=51)
+    if st.session_state.results is None:
+        print("Test")
+        with st.spinner("Finding similar songs..."):
+            st.session_state.results  = utils.get_vector_similarity(feature_vector, n_songs=51)
 
-
+# show warning when no song selected (when manually navigating to /results)
 else:
     st.warning("No song selected. Please go back and select a song to analyze.", icon="⚠️")
 
 
-if st.button("Back to Song Selection", use_container_width=True):
-    st.session_state.selected_song = None
-    st.session_state.song_upload = None
-    switch_page("app")
-
-
-# results
-if results is not None:
+# showing results
+if st.session_state.results is not None:
     # st.write(f"{len(results)} results.")
     # st.dataframe(results)
 
@@ -160,12 +177,9 @@ if results is not None:
     n_results = st.slider("Number of results to display:", min_value=1, max_value=50, value=5, on_change=None, key="selector")
 
     progress_bar = st.progress(0, "Loading")
-    for idx, song in results.iloc[:n_results].iterrows():
+    for idx, song in st.session_state.results.iloc[:n_results].iterrows():
         progress_bar.progress((idx/n_results), "Loading")
         print_song(idx+1, song)
     progress_bar.empty()
 
-    if st.button("Back to Song Selection", use_container_width=True, key="button-end"):
-        st.session_state.selected_song = None
-        st.session_state.song_upload = None
-        switch_page("app")
+    st.button("Back to Song Selection", use_container_width=True, key="button-end", on_click=do_switch_page)

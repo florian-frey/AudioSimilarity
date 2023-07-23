@@ -1,7 +1,8 @@
 src/*.png
 src/secret.txt
 app/secret.txt
-fma-metadata/*.csv
+data/*.csv
+data/fma-metadata/*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

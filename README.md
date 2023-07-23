@@ -2,7 +2,7 @@
 
 Authors (matriculation number):
 
-- Phillip Dingfelder (8687786)
+- Philipp Dingfelder (8687786)
 - Alisa Rogner (7894464)
 - Florian Frey (7199749)
 - Frederick Neugebauer (4521985)

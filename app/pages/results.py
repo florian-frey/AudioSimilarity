@@ -4,6 +4,8 @@ import json
 import utils
 import numpy as np
 from tensorflow.keras.saving import load_model
+import os
+import zipfile
 
 
 # hide side navbar
@@ -111,14 +113,18 @@ if st.session_state.song_upload:
 
     st.button("Back to Song Selection", use_container_width=True, on_click=do_switch_page)
 
-    with st.spinner("Loading model..."):
-        encoder = load_model("model/AEv3encoder3seconds")
+    if st.session_state.results is None:
+        with st.spinner("Loading model..."):
+            if not os.path.exists("./model/AEv3encoder3seconds" + ".*"):
+                with zipfile.ZipFile("./model/AEv3encoder3seconds.zip", 'r') as zip_ref:
+                    zip_ref.extractall("./model/")
+            encoder = load_model("model/AEv3encoder3seconds")
 
-    with st.spinner("Extracting features..."):
-        feature_vector = utils.extract_features(st.session_state.song_upload, encoder)
+        with st.spinner("Extracting features..."):
+            feature_vector = utils.extract_features(st.session_state.song_upload, encoder)
 
-    with st.spinner("Finding similar songs..."):
-        st.session_state.results = utils.get_vector_similarity(feature_vector)
+        with st.spinner("Finding similar songs..."):
+            st.session_state.results = utils.get_vector_similarity(feature_vector)
 
 
 # show database selected song
@@ -152,11 +158,11 @@ elif st.session_state.selected_song:
 
     st.button("Back to Song Selection", use_container_width=True, on_click=do_switch_page)
 
-    with st.spinner("Extracting features..."):
-        feature_vector_text = song["feature_vector_text"]
-        feature_vector = np.array(json.loads(feature_vector_text))
-    
     if st.session_state.results is None:
+        with st.spinner("Extracting features..."):
+            feature_vector_text = song["feature_vector_text"]
+            feature_vector = np.array(json.loads(feature_vector_text))
+     
         with st.spinner("Finding similar songs..."):
             st.session_state.results  = utils.get_vector_similarity(feature_vector, n_songs=51)
 
@@ -175,7 +181,7 @@ if st.session_state.results is not None:
 
     progress_bar = st.progress(0, "Loading...")
     for idx, song in st.session_state.results.iloc[:n_results].iterrows():
-        progress_bar.progress((idx/n_results), "Loading")
+        progress_bar.progress((idx/n_results), "Loading...")
         print_song(idx+1, song)
     progress_bar.empty()
 
